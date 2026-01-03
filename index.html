@@ -46,11 +46,19 @@
             border-radius: 10px;
             padding: 25px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s ease;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
         }
 
         .attribute-card:hover {
             transform: translateY(-5px);
+        }
+
+        .attribute-card.active {
+            transform: translateY(-10px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+            z-index: 10;
         }
 
         .attribute-card.s-level {
@@ -320,5 +328,19 @@
             </div>
         </div>
     </div>
+
+    <script>
+        // 为属性卡片添加点击突出显示功能
+        const attributeCards = document.querySelectorAll('.attribute-card');
+
+        attributeCards.forEach(card => {
+            card.addEventListener('click', () => {
+                // 移除所有卡片的active类
+                attributeCards.forEach(c => c.classList.remove('active'));
+                // 为当前点击的卡片添加active类
+                card.classList.add('active');
+            });
+        });
+    </script>
 </body>
 </html>
