@@ -3,344 +3,321 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>个人成长看板</title>
+    <title>LifeOS v2.0: Personal Dashboard</title>
     <style>
-        /* 全局样式 */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        :root {
+            --bg-color: #0f1115;
+            --panel-bg: #161b22;
+            --text-main: #c9d1d9;
+            --text-dim: #8b949e;
+            --accent-green: #2ea043;
+            --accent-blue: #58a6ff;
+            --accent-gold: #d29922;
+            --accent-red: #da3633;
+            --border: #30363d;
+            --font-mono: 'SF Mono', 'Menlo', 'Monaco', 'Courier New', monospace;
         }
 
         body {
-            background-color: #f5f7fa;
-            color: #333;
-        }
-
-        /* 容器 */
-        .dashboard-container {
-            max-width: 1200px;
-            margin: 0 auto;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
             padding: 20px;
+            display: flex;
+            justify-content: center;
         }
 
-        /* 标题 */
-        .dashboard-title {
-            font-size: 2.5rem;
-            color: #2c3e50;
-            margin-bottom: 30px;
-            text-align: center;
-        }
-
-        /* 属性卡片 */
-        .attributes-grid {
+        .container {
+            max-width: 1000px;
+            width: 100%;
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 20px;
-            margin-bottom: 40px;
         }
 
-        .attribute-card {
-            background-color: white;
-            border-radius: 10px;
-            padding: 25px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease;
-            cursor: pointer;
-            position: relative;
+        /* 通用卡片样式 */
+        .card {
+            background-color: var(--panel-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
         }
 
-        .attribute-card:hover {
-            transform: translateY(-5px);
-        }
-
-        .attribute-card.active {
-            transform: translateY(-10px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
-            z-index: 10;
-        }
-
-        .attribute-card.s-level {
-            border-left: 5px solid #e74c3c;
-        }
-
-        .attribute-card.a-level {
-            border-left: 5px solid #3498db;
-        }
-
-        .attribute-card.b-level {
-            border-left: 5px solid #2ecc71;
-        }
-
-        .attribute-card.c-level {
-            border-left: 5px solid #f39c12;
-        }
-
-        .attribute-name {
-            font-size: 1.2rem;
+        h2, h3 {
+            margin-top: 0;
             font-weight: 600;
-            margin-bottom: 10px;
-            color: #2c3e50;
+            letter-spacing: 0.5px;
         }
 
-        .attribute-value {
-            font-size: 2.5rem;
-            font-weight: 700;
-            margin-bottom: 15px;
-            color: #3498db;
-        }
+        h2 { font-size: 1.2rem; color: var(--text-dim); text-transform: uppercase; margin-bottom: 15px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+        h3 { font-size: 1rem; color: var(--text-main); display: flex; align-items: center; gap: 8px; }
 
-        .attribute-status {
+        label { display: block; margin-bottom: 5px; color: var(--text-dim); font-size: 0.85rem; }
+        textarea, input, select {
+            width: 100%;
+            background: #0d1117;
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 8px;
+            border-radius: 4px;
+            font-family: var(--font-mono);
             font-size: 0.9rem;
-            color: #7f8c8d;
-            margin-bottom: 15px;
+            box-sizing: border-box;
+            resize: vertical;
+        }
+        textarea:focus, input:focus, select:focus {
+            outline: none;
+            border-color: var(--accent-blue);
         }
 
-        .progress-bar {
-            width: 100%;
-            height: 15px;
-            background-color: #e0e0e0;
-            border-radius: 20px;
-            overflow: hidden;
+        /* 顶部：系统状态 */
+        .status-section {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: linear-gradient(90deg, #161b22 0%, #1c2128 100%);
+        }
+        .energy-control { width: 100%; }
+        input[type="range"] {
+            -webkit-appearance: none;
+            height: 8px;
+            background: #30363d;
+            border-radius: 5px;
+            outline: none;
+            margin-top: 10px;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--text-main);
+            cursor: pointer;
+            border: 2px solid var(--bg-color);
+        }
+        .status-display {
+            font-family: var(--font-mono);
+            font-weight: bold;
+            font-size: 1.2rem;
+            min-width: 120px;
+            text-align: right;
+        }
+
+        /* 中部：资源三元组 */
+        .trinity-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+        .res-icon { font-size: 1.5rem; }
+        .res-time { border-top: 3px solid var(--accent-blue); }
+        .res-money { border-top: 3px solid var(--accent-gold); }
+        .res-know { border-top: 3px solid var(--accent-green); }
+
+        .stock-tag {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            background: #30363d;
             margin-bottom: 10px;
         }
 
-        .progress-fill {
-            height: 100%;
-            border-radius: 20px;
-            transition: width 0.5s ease;
-        }
-
-        .s-level .progress-fill {
-            background-color: #e74c3c;
-        }
-
-        .a-level .progress-fill {
-            background-color: #3498db;
-        }
-
-        .b-level .progress-fill {
-            background-color: #2ecc71;
-        }
-
-        .c-level .progress-fill {
-            background-color: #f39c12;
-        }
-
-        .attribute-desc {
-            font-size: 0.85rem;
-            color: #95a5a6;
-            margin-top: 15px;
-        }
-
-        /* 雷达图 */
-        .radar-chart-container {
-            background-color: white;
-            border-radius: 10px;
-            padding: 25px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            margin-bottom: 40px;
-        }
-
-        #radar-chart {
-            width: 100%;
-            height: 500px;
-        }
-
-        /* 任务与成就 */
-        .tasks-achievements {
+        /* 底部：双核 */
+        .dual-core-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 20px;
         }
-
-        .tasks-section, .achievements-section {
-            background-color: white;
-            border-radius: 10px;
-            padding: 25px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        }
-
-        .section-title {
-            font-size: 1.5rem;
-            color: #2c3e50;
-            margin-bottom: 20px;
-        }
-
-        .task-item {
-            background-color: #f5f7fa;
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .task-item.completed {
-            background-color: #d4edda;
-            text-decoration: line-through;
-            opacity: 0.7;
-        }
-
-        .achievement-item {
-            background-color: #fff3cd;
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 10px;
-            border-left: 5px solid #ffc107;
-        }
-
-        .achievement-date {
-            font-size: 0.8rem;
-            color: #856404;
-            margin-top: 5px;
-        }
-
-        /* 响应式设计 */
         @media (max-width: 768px) {
-            .tasks-achievements {
-                grid-template-columns: 1fr;
-            }
+            .dual-core-grid { grid-template-columns: 1fr; }
         }
+
+        .hardware-panel { border-left: 4px solid var(--text-dim); }
+        .software-panel { border-left: 4px solid var(--accent-red); }
+
+        .spec-item { margin-bottom: 15px; }
+
+        .footer-note {
+            text-align: center;
+            color: var(--text-dim);
+            font-size: 0.8rem;
+            margin-top: 20px;
+        }
+
+        /* 动态颜色类 */
+        .status-low { color: var(--accent-red); }
+        .status-med { color: var(--accent-gold); }
+        .status-high { color: var(--accent-green); }
     </style>
 </head>
 <body>
-    <div class="dashboard-container">
-        <h1 class="dashboard-title">🎮 个人成长看板</h1>
 
-        <!-- 属性卡片 -->
-        <div class="attributes-grid">
-            <div class="attribute-card s-level">
-                <div class="attribute-name">生命值 (Health Point)</div>
-                <div class="attribute-value">85</div>
-                <div class="attribute-status">健康状态</div>
-                <div class="progress-bar">
-                    <div class="progress-fill" style="width: 85%"></div>
-                </div>
-                <div class="attribute-desc">生理健康综合评分</div>
+<div class="container">
+    <section class="card status-section">
+        <div style="flex-grow: 1; margin-right: 20px;">
+            <h3>🔋 SYSTEM ENERGY LEVEL (当前能量)</h3>
+            <input type="range" id="energyRange" min="0" max="100" value="60" oninput="updateEnergy()">
+            <div style="display:flex; justify-content:space-between; font-size:0.8rem; color:var(--text-dim); margin-top:5px;">
+                <span>低电量 (只能生存)</span>
+                <span>正常 (可工作)</span>
+                <span>高性能 (可学习)</span>
+            </div>
+        </div>
+        <div class="status-display" id="energyValue">60%</div>
+    </section>
+
+    <section class="trinity-grid">
+        <div class="card res-time">
+            <h3><span class="res-icon">⏳</span> TIME (时间)</h3>
+            <label>当前库存状态</label>
+            <select id="timeStock" onchange="saveData()">
+                <option value="稀缺">⚠️ 极度稀缺 (碎片化)</option>
+                <option value="平衡" selected>⚖️ 平衡 (周末可用)</option>
+                <option value="富余">🟢 富余 (Gap Year/假期)</option>
+            </select>
+            <label style="margin-top:10px;">转化与使用策略</label>
+            <textarea id="timeStrategy" rows="3" placeholder="例：只在黄金时段(22:00)进行深度学习..." oninput="saveData()"></textarea>
+        </div>
+
+        <div class="card res-money">
+            <h3><span class="res-icon">💰</span> MONEY (金钱)</h3>
+            <label>当前库存状态</label>
+            <select id="moneyStock" onchange="saveData()">
+                <option value="生存线">🔴 警戒 (生存线)</option>
+                <option value="安全" selected>🟢 安全 (有Runway)</option>
+                <option value="充裕">💰 充裕 (可激进投资)</option>
+            </select>
+            <label style="margin-top:10px;">转化与使用策略</label>
+            <textarea id="moneyStrategy" rows="3" placeholder="例：凡是能用 <200元 解决的麻烦，一律外包..." oninput="saveData()"></textarea>
+        </div>
+
+        <div class="card res-know">
+            <h3><span class="res-icon">🧠</span> KNOWLEDGE (知识)</h3>
+            <label>当前核心资产</label>
+            <input type="text" id="knowledgeCore" placeholder="例：编程(Lv.8), 写作(Lv.5)" oninput="saveData()">
+            <label style="margin-top:10px;">转化与使用策略</label>
+            <textarea id="knowledgeStrategy" rows="3" placeholder="例：利用编程技能开发工具，节省时间..." oninput="saveData()"></textarea>
+        </div>
+    </section>
+
+    <section class="dual-core-grid">
+        <div class="card hardware-panel">
+            <h2>🤖 Hardware Specs (客观硬件)</h2>
+            <p style="font-size:0.8rem; color:var(--text-dim); margin-bottom:15px;">* 不可更改的出厂设置，只能顺应。</p>
+
+            <div class="spec-item">
+                <label>🧠 认知/内存模式 (RAM)</label>
+                <select id="hwRam" onchange="saveData()">
+                    <option value="单线程">单线程 (一次一事，忌多任务)</option>
+                    <option value="多线程">多线程 (可并行处理)</option>
+                </select>
             </div>
 
-            <div class="attribute-card s-level">
-                <div class="attribute-name">精神值 (Sanity Point)</div>
-                <div class="attribute-value">78</div>
-                <div class="attribute-status">心理稳定状态</div>
-                <div class="progress-bar">
-                    <div class="progress-fill" style="width: 78%"></div>
-                </div>
-                <div class="attribute-desc">心理健康综合评分</div>
+            <div class="spec-item">
+                <label>⏰ 生物节律 (Chronotype)</label>
+                <select id="hwClock" onchange="saveData()">
+                    <option value="夜猫子">夜猫子 (晚睡晚起，深夜高效)</option>
+                    <option value="百灵鸟">百灵鸟 (早睡早起，清晨高效)</option>
+                    <option value="混合型">混合型 (下午/傍晚高效)</option>
+                </select>
             </div>
 
-            <div class="attribute-card a-level">
-                <div class="attribute-name">学习能力 (Learning Rate)</div>
-                <div class="attribute-value">72</div>
-                <div class="attribute-status">良好</div>
-                <div class="progress-bar">
-                    <div class="progress-fill" style="width: 72%"></div>
-                </div>
-                <div class="attribute-desc">信息吸收与应用效率</div>
+            <div class="spec-item">
+                <label>🔌 社交电池 (Battery)</label>
+                <select id="hwSocial" onchange="saveData()">
+                    <option value="蓄电池">蓄电池 (内向/独处充电)</option>
+                    <option value="太阳能">太阳能 (外向/社交充电)</option>
+                </select>
             </div>
 
-            <div class="attribute-card a-level">
-                <div class="attribute-name">行动力 (Action Speed)</div>
-                <div class="attribute-value">68</div>
-                <div class="attribute-status">中等</div>
-                <div class="progress-bar">
-                    <div class="progress-fill" style="width: 68%"></div>
-                </div>
-                <div class="attribute-desc">决策与执行效率</div>
-            </div>
-
-            <div class="attribute-card b-level">
-                <div class="attribute-name">社交值 (Social Value)</div>
-                <div class="attribute-value">75</div>
-                <div class="attribute-status">良好</div>
-                <div class="progress-bar">
-                    <div class="progress-fill" style="width: 75%"></div>
-                </div>
-                <div class="attribute-desc">人际关系质量与规模</div>
-            </div>
-
-            <div class="attribute-card b-level">
-                <div class="attribute-name">影响力 (Influence)</div>
-                <div class="attribute-value">62</div>
-                <div class="attribute-status">中等</div>
-                <div class="progress-bar">
-                    <div class="progress-fill" style="width: 62%"></div>
-                </div>
-                <div class="attribute-desc">群体中的话语权与贡献度</div>
-            </div>
-
-            <div class="attribute-card c-level">
-                <div class="attribute-name">财富值 (Wealth)</div>
-                <div class="attribute-value">70</div>
-                <div class="attribute-status">良好</div>
-                <div class="progress-bar">
-                    <div class="progress-fill" style="width: 70%"></div>
-                </div>
-                <div class="attribute-desc">经济实力综合评分</div>
-            </div>
-
-            <div class="attribute-card c-level">
-                <div class="attribute-name">时间资源 (Time Resource)</div>
-                <div class="attribute-value">65</div>
-                <div class="attribute-status">中等</div>
-                <div class="progress-bar">
-                    <div class="progress-fill" style="width: 65%"></div>
-                </div>
-                <div class="attribute-desc">可支配时间利用率</div>
+             <div class="spec-item">
+                <label>💾 I/O 优势模态</label>
+                <select id="hwIO" onchange="saveData()">
+                    <option value="视觉型">视觉型 (阅读文档 > 听说话)</option>
+                    <option value="听觉型">听觉型 (对话/播客 > 看书)</option>
+                    <option value="实操型">实操型 (上手做 > 理论)</option>
+                </select>
             </div>
         </div>
 
-        <!-- 任务与成就 -->
-        <div class="tasks-achievements">
-            <div class="tasks-section">
-                <h2 class="section-title">📋 今日任务</h2>
-                <div class="task-item completed">
-                    <span>早睡早起（23:00前睡，7:00前起）</span>
-                    <span>✅</span>
-                </div>
-                <div class="task-item completed">
-                    <span>运动30分钟</span>
-                    <span>✅</span>
-                </div>
-                <div class="task-item">
-                    <span>学习1小时</span>
-                    <span>⏳</span>
-                </div>
-                <div class="task-item">
-                    <span>与朋友深度沟通1次</span>
-                    <span>⏳</span>
-                </div>
+        <div class="card software-panel">
+            <h2>🧠 Software Drivers (主观认知)</h2>
+            <p style="font-size:0.8rem; color:var(--text-dim); margin-bottom:15px;">* 价值观、偏好与已知Bug。</p>
+
+            <div class="spec-item">
+                <label>⚖️ 核心价值观排序 (Top 3)</label>
+                <textarea id="swValues" rows="4" placeholder="1. 自主权&#10;2. 创造力&#10;3. 真诚" oninput="saveData()"></textarea>
             </div>
 
-            <div class="achievements-section">
-                <h2 class="section-title">🏆 已解锁成就</h2>
-                <div class="achievement-item">
-                    <div>生存大师 - 连续30天保持健康饮食与规律作息</div>
-                    <div class="achievement-date">2025-12-15</div>
-                </div>
-                <div class="achievement-item">
-                    <div>学习达人 - 30天内掌握1门新技能</div>
-                    <div class="achievement-date">2025-11-20</div>
-                </div>
+            <div class="spec-item">
+                <label>❤️ 动力与快乐源泉 (Drivers)</label>
+                <textarea id="swDrivers" rows="3" placeholder="解决难题、独处散步..." oninput="saveData()"></textarea>
+            </div>
+
+            <div class="spec-item">
+                <label>⛔ 已知Bug与恐惧 (Fears)</label>
+                <textarea id="swFears" rows="3" placeholder="冒名顶替综合症、完美主义拖延..." oninput="saveData()"></textarea>
             </div>
         </div>
+    </section>
+
+    <div class="footer-note">
+        LifeOS v2.0 &bull; Data saved locally &bull; Review before big decisions
     </div>
+</div>
 
-    <script>
-        // 为属性卡片添加点击突出显示功能
-        const attributeCards = document.querySelectorAll('.attribute-card');
+<script>
+    // 定义所有需要保存的字段ID
+    const fieldIds = [
+        'energyRange', 'timeStock', 'timeStrategy',
+        'moneyStock', 'moneyStrategy', 'knowledgeCore', 'knowledgeStrategy',
+        'hwRam', 'hwClock', 'hwSocial', 'hwIO',
+        'swValues', 'swDrivers', 'swFears'
+    ];
 
-        attributeCards.forEach(card => {
-            card.addEventListener('click', () => {
-                // 移除所有卡片的active类
-                attributeCards.forEach(c => c.classList.remove('active'));
-                // 为当前点击的卡片添加active类
-                card.classList.add('active');
-            });
+    // 页面加载时读取数据
+    window.onload = function() {
+        fieldIds.forEach(id => {
+            const savedValue = localStorage.getItem('lifeos_' + id);
+            if (savedValue !== null) {
+                document.getElementById(id).value = savedValue;
+            }
         });
-    </script>
+        updateEnergy(); // 初始化能量颜色
+    };
+
+    // 保存数据到 LocalStorage
+    function saveData() {
+        fieldIds.forEach(id => {
+            const value = document.getElementById(id).value;
+            localStorage.setItem('lifeos_' + id, value);
+        });
+    }
+
+    // 更新能量条视觉效果
+    function updateEnergy() {
+        const range = document.getElementById('energyRange');
+        const display = document.getElementById('energyValue');
+        const val = parseInt(range.value);
+
+        display.innerText = val + "%";
+
+        // 移除旧的颜色类
+        display.classList.remove('status-low', 'status-med', 'status-high');
+
+        if (val < 30) {
+            display.classList.add('status-low');
+            display.innerText += " (WARNING)";
+        } else if (val < 70) {
+            display.classList.add('status-med');
+        } else {
+            display.classList.add('status-high');
+        }
+        saveData();
+    }
+</script>
+
 </body>
 </html>
